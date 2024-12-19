@@ -96,7 +96,7 @@ TEMPLATE=prompt_template.gpt
 if test -n "${OPENAI_API_KEY} && test -n "${TEMPLATE}" && test -s "${TEMPLATE}"; then \
   name=`basename ${TEMPLATE} .gpt` ;\
   mkdir -p output/${name} ;\
-  for f in input/*.txt ; do
+  for f in input/*.txt ; do \
     base=`basename ${f} .txt ;\
     temp=`mktemp -d /tmp` ;\
     sed -e "s,{INPUT},${f},; s,{OUTPUT},output/${name}/${base}.txt," ${TEMPLATE} > ${temp} ;\
