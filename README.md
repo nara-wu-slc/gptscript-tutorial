@@ -102,7 +102,7 @@ if test -n "${OPENAI_API_KEY} && test -n "${TEMPLATE}" && test -s "${TEMPLATE}";
     sed -e "s,{INPUT},${f},; s,{OUTPUT},output/${name}/${base}.txt," ${TEMPLATE} > ${temp} ;\
     gptscript --no-trunc --output output/${name}/${base}.log ${temp} ;\
     /bin/rm ${temp} ;\
-  done \;
+  done ;\
 fi
 ```
 
