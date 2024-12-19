@@ -93,9 +93,9 @@ TEMPLATE=prompt_template.gpt
 続いて、以下のコマンドを実行します。
 出力はプロンプトによって異なるはずなので、プロンプトテンプレートのファイル名を利用して、出力ファイル名は `output/prompt_template/*.txt` とします。
 ```
-name=`basename ${TEMPLATE} .gpt`
-mkdir -p output/${name}
-if test -n "${OPENAI_API_KEY} ; then
+if test -n "${OPENAI_API_KEY} && test -n "${TEMPLATE}" && test -s "${TEMPLATE}"; then
+  name=`basename ${TEMPLATE} .gpt`
+  mkdir -p output/${name}
   for f in input/*.txt ; do
     base=`basename ${f} .txt
     temp=`mktemp -d /tmp`
@@ -105,3 +105,6 @@ if test -n "${OPENAI_API_KEY} ; then
   done
 fi
 ```
+
+>[!NOTE]
+>上記のコマンドは安全のため 環境変数 `OPENAI_API_KEY` と 変数 `TEMPLATE` が設定されていないと何もしないようにしてあります。
