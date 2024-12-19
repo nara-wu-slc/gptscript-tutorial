@@ -104,7 +104,7 @@ else
   mkdir -p output/${name}
   for f in input/*.txt ; do
     base=`basename ${f} .txt`
-    temp=`mktemp -p /tmp`
+    temp=`mktemp -p /tmp tmp.XXXXXXXX.gpt`
     sed -e "s,{INPUT},${f},; s,{OUTPUT},output/${name}/${base}.txt," ${TEMPLATE} > ${temp}
     gptscript --no-trunc --output output/${name}/${base}.log ${temp}
     /bin/rm ${temp}
