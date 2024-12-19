@@ -93,12 +93,18 @@ TEMPLATE=prompt_template.gpt
 続いて、以下のコマンドを実行します。
 出力はプロンプトによって異なるはずなので、プロンプトテンプレートのファイル名を利用して、出力ファイル名は `output/prompt_template/*.txt` とします。
 ```
-if test -n "${OPENAI_API_KEY}" && test -n "${TEMPLATE}" && test -s "${TEMPLATE}"; then
+if test ! -n "${OPENAI_API_KEY}" ; then
+  echo "ERROR: the environmental variable OPENAI_API_KEY is empty"
+elif test -n "${TEMPLATE}" ; then
+  echo "ERROR: the variable TEMPLATE is empty"
+elif test -s "${TEMPLATE}"; then
+  echo "ERROR: the template ${TEMPLATE} is not found"
+else
   name=`basename ${TEMPLATE} .gpt`
   mkdir -p output/${name}
   for f in input/*.txt ; do
     base=`basename ${f} .txt`
-    temp=`mktemp --tmpdir /tmp`
+    temp=`mktemp -p /tmp`
     sed -e "s,{INPUT},${f},; s,{OUTPUT},output/${name}/${base}.txt," ${TEMPLATE} > ${temp}
     gptscript --no-trunc --output output/${name}/${base}.log ${temp}
     /bin/rm ${temp}
