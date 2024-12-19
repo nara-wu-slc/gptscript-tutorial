@@ -90,14 +90,14 @@ API Keyの値には自分のAPI Keyを入れてください。
 TEMPLATE=prompt_template.gpt
 ```
 
-続いて、以下のコマンドを実行します。
+続いて、以下のコマンドを実行します（コピペで動きます）。
 出力はプロンプトによって異なるはずなので、プロンプトテンプレートのファイル名を利用して、出力ファイル名は `output/prompt_template/*.txt` とします。
 ```
-if test ! -n "${OPENAI_API_KEY}" ; then
+if test -z "${OPENAI_API_KEY}" ; then
   echo "ERROR: the environmental variable OPENAI_API_KEY is empty"
-elif test -n "${TEMPLATE}" ; then
+elif test -z "${TEMPLATE}" ; then
   echo "ERROR: the variable TEMPLATE is empty"
-elif test -s "${TEMPLATE}"; then
+elif test ! -s "${TEMPLATE}"; then
   echo "ERROR: the template ${TEMPLATE} is not found"
 else
   name=`basename ${TEMPLATE} .gpt`
