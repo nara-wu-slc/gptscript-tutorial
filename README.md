@@ -2,6 +2,11 @@
 
 GPT系のAPIを使って処理をする [gptscript](https://github.com/gptscript-ai/gptscript) のチュートリアルです。
 
+## 目次
+- [インストール](#インストール)
+- [使い方1: 基本（直接型）](#使い方1-基本直接型)
+- [使い方2: 応用（テンプレート型）](#使い方2-応用テンプレート型)
+
 ## インストール
 - 研究室のサーバには導入済みです
 - Macであれば [Homebrew](https://brew.sh/ja/) を使って簡単にインストールできます
@@ -9,7 +14,7 @@ GPT系のAPIを使って処理をする [gptscript](https://github.com/gptscript
 brew install gptscript
 ```
 
-## 使い方
+## 使い方1: 基本（直接型）
 ### プロンプトを書いたファイルを用意する
 例：韓国語を日本語に翻訳して、原文と訳文の各行をタブ記号で連結したTSVファイルとして出力してもらうためのスクリプト (`translate-Korean-to-Japanese.gpt` とする)
 ```
@@ -34,6 +39,9 @@ Guidelines:
   - ただし、ファイルの出力形式の指定は厳密に守られる保証がないので注意が必要（処理結果のチェックをすること）
 - ファイル名を相対パスで書く場合はスクリプト実行時のカレントディレクトリを基準にすること
 
+>[!NOTE]
+>出力ファイル名を指定しないと適当なファイル名で出力されてしまうので注意
+
 ### API Keyを設定する
 ```
 export OPENAI_API_KEY=...
@@ -46,3 +54,54 @@ API Keyの値には自分のAPI Keyを入れてください。
 gptscript --no-trunc -o gptscript.log gptscript.gpt
 ```
 実行後 `target/file001.tsv` というファイルができるはず。
+
+
+## 使い方2: 応用（テンプレート型）
+### プロンプトのテンプレートを用意する
+特定のファイル名を書いてしまうと大量のファイルを順番に処理したいときに困るので、テンプレートに基づいてプロンプトファイルを自動生成してAPIに投げるようにします。
+
+例えばテキストの要約をしたいとしたとき、以下のようなファイルを `prompt_template.gpt` という名前で作り、入力ファイル名を入れる箇所を `{INPUT}`、出力ファイル名を入れる箇所を `{OUTPUT}`で表します。
+```
+model: gpt-4o-mini
+tools: sys.read, sys.write
+
+You are a helpful text analyst.
+Please read the Japanese text file {INPUT} and write its summary into the file {OUTPUT}, following the guidelines below.
+
+Guidelines:
+- Please keep the original expressions as much as possible.
+- Please do not put newline symbols inside the output.
+```
+>[!NOTE]
+>後の処理の都合で、テンプレートファイルの拡張子は `.gpt` にしておいてください。
+
+### API Keyを設定する
+```
+export OPENAI_API_KEY=...
+```
+API Keyの値には自分のAPI Keyを入れてください。
+
+### テンプレートからプロンプトファイルを自動生成して gptscript を実行する
+その上で、`input/*.txt` に入力ファイル群が存在するとします（異なる場合は適宜コマンドを書き換えてください）。
+
+まず最初にプロンプトテンプレートのファイル名を指定します。
+相対パスでも絶対パスでもかまいません。
+```
+TEMPLATE=prompt_template.gpt
+```
+
+続いて、以下のコマンドを実行します。
+出力はプロンプトによって異なるはずなので、プロンプトテンプレートのファイル名を利用して、出力ファイル名は `output/prompt_template/*.txt` とします。
+```
+name=`basename ${TEMPLATE} .gpt`
+mkdir -p output/${name}
+if test -n "${OPENAI_API_KEY} ; then
+  for f in input/*.txt ; do
+    base=`basename ${f} .txt
+    temp=`mktemp -d /tmp`
+    sed -e "s,{INPUT},${f},; s,{OUTPUT},output/${name}/${base}.txt," ${TEMPLATE} > ${temp}
+    gptscript --no-trunc --output output/${name}/${base}.log ${temp}
+    /bin/rm ${temp}
+  done
+fi
+```
